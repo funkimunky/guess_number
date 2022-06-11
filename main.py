@@ -1,19 +1,14 @@
 myTimer = 6
 timerTimeout = 1
-
-def on_run_in_parallel():
-    while True:
-        pause(4000)
-        control.raise_event(myTimer, timerTimeout)
-control.run_in_parallel(on_run_in_parallel)
-
-control.wait_for_event(myTimer, timerTimeout)
-print("Timer timeout")
-control.wait_for_event(myTimer, timerTimeout)
-print("Timer timeout")
-
-program_state = "start"
+ticks = 0
+ticks_to_wait = 30
 computer_number = 0
+guess_number = 0
+button_pressed = False
+program_options = ["start","get_input","check_number","end"]
+program_state = program_options[0]
+game_options = ["start", "lower", "higher", "win"]
+game_check = game_options[0]
 
 led_blank = """
 . . . . .
@@ -48,6 +43,15 @@ led_lower = """
 """
 
 
+def on_run_in_parallel():
+    while True:
+        pause(100)
+        ticks += 1
+        if ticks == ticks_to_wait:
+            ticks = 0
+
+control.run_in_parallel(on_run_in_parallel)
+
 
 def progress_game(current_state):
     if current_state == "start":
@@ -61,42 +65,67 @@ def progress_game(current_state):
 
 
 def start_game():
-    current_state = "start"
+    program_state = program_options[0]
     computer_number = randint(1, 9)
     basic.clear_screen()
-    basic.show_string("guess")
+    basic.show_leds(led_smile)
+    ticks = 0
+    while True:       
+        if button_pressed or ticks > 10:
+            ticks = 0
+            break
+
+    program_state = program_options[1]
     pass
 
 def get_input():
-    pass
-
-def check_number(guess_number):    
-
-        if guess_number < computer_number:
-            print(">.\n")
-
-        if guess_number > computer_number:
-            print("Your guess is too high, try again.\n")
-
-        if guess_number == computer_number:
-            print("Congratulations")
-            number_flag = True
+    basic.clear_screen()
+    basic.show_string("guess")
+    ticks = 0    
+    while True:
+        basic.show_number(guess_number)
+        if ticks > ticks_to_wait:
             break
 
-        if counter >= number_guesses:
-            print("Sorry you ran out of guesses, please try again.\n")
-            number_flag = True
+    program_state = program_options[2]
+    pass
+
+
+def check_number():    
+    
+
+    if guess_number > computer_number:
+        game_check = game_options[1]
+
+    if guess_number < computer_number:
+        game_check = game_options[2]
+
+    if guess_number == computer_number:
+        print("Congratulations")
+        number_flag = True
+        break
+
+    if counter >= number_guesses:
+        print("Sorry you ran out of guesses, please try again.\n")
+        number_flag = True
     pass
 
 def end():
     pass
 
 def on_button_pressed_a():
+    if program_state == "start":
+        guess_number +=1
+        if guess_number == 10:
+            guess_number = 1
     pass
 
 def on_button_pressed_b():
+    if program_state == "start":
+        guess_number -=1
+        if guess_number == 0:
+                guess_number = 9
     pass
-
 
 
 
@@ -104,5 +133,6 @@ def on_forever():
     progress_game(program_state)
     input.on_button_pressed(Button.A, on_button_pressed_a)
     input.on_button_pressed(Button.B, on_button_pressed_b)
+
 
 basic.forever(on_forever)
