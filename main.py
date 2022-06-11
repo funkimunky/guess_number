@@ -58,14 +58,14 @@ def on_run_in_parallel():
 control.run_in_parallel(on_run_in_parallel)
 
 
-def progress_game(current_state):
-    if current_state == "start":
+def progress_game():
+    if program_state == program_options[0]:
         start_game()
-    elif current_state == "get_input":
+    elif program_state == program_options[1]:
         get_input()
-    elif current_state == "check_number":
+    elif program_state == program_options[2]:
         check_number()
-    elif current_state == "end":
+    elif program_state == program_options[3]:
         end()
 
 
@@ -130,6 +130,7 @@ def check_number():
 
 
 def end():
+    button_pressed = False
     basic.show_leds("""
     . . . . #
     . . . . #
@@ -138,9 +139,11 @@ def end():
     . # . . .
     """)
     pause(1000)
+    program_state = program_options[0]
     pass
 
-def on_button_pressed_a():
+def on_button_pressed_a(): 
+    button_pressed = True   
     if program_state == "start":
         guess_number +=1
         if guess_number == 10:
@@ -148,6 +151,7 @@ def on_button_pressed_a():
     pass
 
 def on_button_pressed_b():
+    button_pressed = True
     if program_state == "start":
         guess_number -=1
         if guess_number == 0:
@@ -156,7 +160,7 @@ def on_button_pressed_b():
 
 
 def on_forever():
-    progress_game(program_state)
+    progress_game()
     input.on_button_pressed(Button.A, on_button_pressed_a)
     input.on_button_pressed(Button.B, on_button_pressed_b)
 

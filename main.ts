@@ -53,14 +53,14 @@ control.runInParallel(function on_run_in_parallel() {
         
     }
 })
-function progress_game(current_state: string) {
-    if (current_state == "start") {
+function progress_game() {
+    if (program_state == program_options[0]) {
         start_game()
-    } else if (current_state == "get_input") {
+    } else if (program_state == program_options[1]) {
         get_input()
-    } else if (current_state == "check_number") {
+    } else if (program_state == program_options[2]) {
         check_number()
-    } else if (current_state == "end") {
+    } else if (program_state == program_options[3]) {
         end()
     }
     
@@ -136,6 +136,7 @@ function check_number() {
 }
 
 function end() {
+    let button_pressed = false
     basic.showLeds(`
     . . . . #
     . . . . #
@@ -144,13 +145,15 @@ function end() {
     . # . . .
     `)
     pause(1000)
+    let program_state = program_options[0]
     
 }
 
 basic.forever(function on_forever() {
-    progress_game(program_state)
+    progress_game()
     input.onButtonPressed(Button.A, function on_button_pressed_a() {
         let guess_number: number;
+        let button_pressed = true
         if (program_state == "start") {
             guess_number += 1
             if (guess_number == 10) {
@@ -163,6 +166,7 @@ basic.forever(function on_forever() {
     })
     input.onButtonPressed(Button.B, function on_button_pressed_b() {
         let guess_number: number;
+        let button_pressed = true
         if (program_state == "start") {
             guess_number -= 1
             if (guess_number == 0) {
