@@ -1,9 +1,6 @@
-let myTimer = 6
-let timerTimeout = 1
-let ticks = 0
-let ticks_to_wait = 30
+let msecs_start = control.millis()
 let computer_number = 0
-let guess_number = 0
+let guess_number = 1
 let button_pressed = false
 let program_options = ["start", "get_input", "check_number", "end"]
 let program_state = program_options[0]
@@ -42,18 +39,8 @@ let led_congratulations = `
 # . # . .
 . # . . .
 `
-control.runInParallel(function on_run_in_parallel() {
-    let ticks: number;
-    while (true) {
-        pause(100)
-        ticks += 1
-        if (ticks == ticks_to_wait) {
-            ticks = 0
-        }
-        
-    }
-})
 function progress_game() {
+    
     if (program_state == program_options[0]) {
         start_game()
     } else if (program_state == program_options[1]) {
@@ -67,7 +54,9 @@ function progress_game() {
 }
 
 function start_game() {
-    let program_state = program_options[0]
+    let msecs_diff: number;
+    
+    program_state = program_options[0]
     let computer_number = randint(1, 9)
     basic.clearScreen()
     basic.showLeds(`
@@ -77,10 +66,10 @@ function start_game() {
     # . . . #
     . # # # .
     `)
-    let ticks = 0
+    let msecs = control.millis()
     while (true) {
-        if (button_pressed || ticks > 10) {
-            ticks = 0
+        msecs_diff = control.millis() - msecs
+        if (button_pressed || msecs_diff > 1000) {
             break
         }
         
@@ -90,39 +79,44 @@ function start_game() {
 }
 
 function get_input() {
+    let msecs_diff: number;
+    
     basic.clearScreen()
     basic.showString("guess")
-    let ticks = 0
+    let msecs = control.millis()
     while (true) {
+        input.onButtonPressed(Button.A, on_button_pressed_a)
+        input.onButtonPressed(Button.B, on_button_pressed_b)
         basic.showNumber(guess_number)
-        if (ticks > ticks_to_wait) {
+        msecs_diff = control.millis() - msecs
+        if (msecs_diff > 1000) {
             break
         }
         
     }
-    let program_state = program_options[2]
+    program_state = program_options[2]
     
 }
 
 function check_number() {
-    let program_state: string;
+    
     if (guess_number > computer_number) {
         basic.showLeds(`
         . . # . .
-        . # . # .
-        # . . . #
-        # . . . #
-        # . . . #
+        . # . . .
+        # . . . .
+        . # . . .
+        . . # . .
         `)
         pause(1000)
     }
     
     if (guess_number < computer_number) {
         basic.showLeds(`
-        # . . . #
-        # . . . #
-        # . . . #
-        . # . # .
+        . . # . .
+        . . . # .
+        . . . . #
+        . . . # .
         . . # . .
         `)
         pause(1000)
@@ -136,6 +130,7 @@ function check_number() {
 }
 
 function end() {
+    
     let button_pressed = false
     basic.showLeds(`
     . . . . #
@@ -145,36 +140,44 @@ function end() {
     . # . . .
     `)
     pause(1000)
-    let program_state = program_options[0]
+    program_state = program_options[0]
+    
+}
+
+function on_button_pressed_a() {
+    let guess_number: number;
+    
+    
+    button_pressed = true
+    if (program_state == program_options[1]) {
+        guess_number += 1
+        if (guess_number == 10) {
+            guess_number = 1
+        }
+        
+    }
+    
+    
+}
+
+function on_button_pressed_b() {
+    let guess_number: number;
+    
+    
+    button_pressed = true
+    if (program_state == program_options[1]) {
+        guess_number -= 1
+        if (guess_number == 0) {
+            guess_number = 9
+        }
+        
+    }
+    
     
 }
 
 basic.forever(function on_forever() {
     progress_game()
-    input.onButtonPressed(Button.A, function on_button_pressed_a() {
-        let guess_number: number;
-        let button_pressed = true
-        if (program_state == "start") {
-            guess_number += 1
-            if (guess_number == 10) {
-                guess_number = 1
-            }
-            
-        }
-        
-        
-    })
-    input.onButtonPressed(Button.B, function on_button_pressed_b() {
-        let guess_number: number;
-        let button_pressed = true
-        if (program_state == "start") {
-            guess_number -= 1
-            if (guess_number == 0) {
-                guess_number = 9
-            }
-            
-        }
-        
-        
-    })
+    input.onButtonPressed(Button.A, on_button_pressed_a)
+    input.onButtonPressed(Button.B, on_button_pressed_b)
 })
