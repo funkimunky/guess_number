@@ -1,4 +1,4 @@
-let msecs_start = control.millis()
+let msecs = control.millis()
 let computer_number = 0
 let guess_number = 1
 let button_pressed = false
@@ -57,7 +57,7 @@ function start_game() {
     let msecs_diff: number;
     
     program_state = program_options[0]
-    let computer_number = randint(1, 9)
+    computer_number = randint(1, 9)
     basic.clearScreen()
     basic.showLeds(`
     . . . . .
@@ -66,7 +66,7 @@ function start_game() {
     # . . . #
     . # # # .
     `)
-    let msecs = control.millis()
+    msecs = control.millis()
     while (true) {
         msecs_diff = control.millis() - msecs
         if (button_pressed || msecs_diff > 1000) {
@@ -75,21 +75,54 @@ function start_game() {
         
     }
     program_state = program_options[1]
+    basic.clearScreen()
+    basic.showString("guess")
     
 }
 
 function get_input() {
     let msecs_diff: number;
+    let hertz_offset: number;
+    let time_offset: number;
     
     basic.clearScreen()
-    basic.showString("guess")
-    let msecs = control.millis()
+    msecs = control.millis()
     while (true) {
-        input.onButtonPressed(Button.A, on_button_pressed_a)
-        input.onButtonPressed(Button.B, on_button_pressed_b)
-        basic.showNumber(guess_number)
         msecs_diff = control.millis() - msecs
-        if (msecs_diff > 1000) {
+        input.onButtonPressed(Button.A, function on_button_pressed_a() {
+            
+            button_pressed = true
+            if (program_state == program_options[1]) {
+                msecs = control.millis()
+                guess_number -= 1
+                if (guess_number == 0) {
+                    guess_number = 9
+                }
+                
+            }
+            
+            
+        })
+        input.onButtonPressed(Button.B, function on_button_pressed_b() {
+            
+            button_pressed = true
+            if (program_state == program_options[1]) {
+                msecs = control.millis()
+                guess_number += 1
+                if (guess_number == 10) {
+                    guess_number = 1
+                }
+                
+            }
+            
+            
+        })
+        basic.showNumber(guess_number)
+        hertz_offset = 840 - Math.trunc((5000 - msecs_diff) / 5000 * 400)
+        time_offset = 1000 - Math.trunc((5000 - (5000 - msecs_diff)) / 5000 * 500)
+        music.playTone(hertz_offset, time_offset)
+        msecs_diff = control.millis() - msecs
+        if (msecs_diff > 5000) {
             break
         }
         
@@ -109,6 +142,7 @@ function check_number() {
         . . # . .
         `)
         pause(1000)
+        program_state = program_options[1]
     }
     
     if (guess_number < computer_number) {
@@ -120,6 +154,7 @@ function check_number() {
         . . # . .
         `)
         pause(1000)
+        program_state = program_options[1]
     }
     
     if (guess_number == computer_number) {
@@ -131,7 +166,7 @@ function check_number() {
 
 function end() {
     
-    let button_pressed = false
+    button_pressed = false
     basic.showLeds(`
     . . . . #
     . . . . #
@@ -144,40 +179,6 @@ function end() {
     
 }
 
-function on_button_pressed_a() {
-    let guess_number: number;
-    
-    
-    button_pressed = true
-    if (program_state == program_options[1]) {
-        guess_number += 1
-        if (guess_number == 10) {
-            guess_number = 1
-        }
-        
-    }
-    
-    
-}
-
-function on_button_pressed_b() {
-    let guess_number: number;
-    
-    
-    button_pressed = true
-    if (program_state == program_options[1]) {
-        guess_number -= 1
-        if (guess_number == 0) {
-            guess_number = 9
-        }
-        
-    }
-    
-    
-}
-
 basic.forever(function on_forever() {
     progress_game()
-    input.onButtonPressed(Button.A, on_button_pressed_a)
-    input.onButtonPressed(Button.B, on_button_pressed_b)
 })
